@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import QRCode from 'qrcode'
 import { supabase } from '@/lib/supabase'
 import { CreateLinkForm } from './components/CreateLinkForm'
+import { EditLinkForm } from './components/EditLinkForm'
 import { deleteLink } from './actions'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
@@ -92,6 +93,11 @@ export default async function Home() {
                       <p className="text-xs text-zinc-400">
                         {link.scan_count} scan{link.scan_count !== 1 ? 's' : ''}
                       </p>
+                      <EditLinkForm
+                        linkId={link.id}
+                        currentDestination={link.destination}
+                        currentLabel={link.label}
+                      />
                     </div>
 
                     {/* Delete */}
