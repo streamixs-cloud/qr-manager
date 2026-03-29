@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QR Manager
+
+A QR code link manager built with Next.js 15, Tailwind CSS, and Supabase.
+
+## Features
+
+- Create short links with custom slugs
+- Generate QR codes for any link
+- Track scan counts via redirect endpoint
+- Dashboard to manage all links
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router, TypeScript)
+- **Styling**: Tailwind CSS
+- **Database**: Supabase (PostgreSQL)
+- **QR Generation**: `qrcode`
+- **Slug IDs**: `nanoid`
+
+## Project Structure
+
+```
+app/
+  layout.tsx          # Root layout
+  page.tsx            # Home / link dashboard
+  r/[slug]/route.ts   # Redirect handler (GET /r/:slug)
+lib/
+  supabase.ts         # Supabase client + Link type
+supabase/
+  migrations/
+    001_create_links.sql  # Database schema
+```
+
+## Database Schema
+
+```sql
+CREATE TABLE links (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT UNIQUE NOT NULL,
+  destination TEXT NOT NULL,
+  label TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  scan_count INTEGER DEFAULT 0
+);
+```
+
+Run this migration in your Supabase project SQL editor.
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Copy the env example and fill in your Supabase credentials:
+
+```bash
+cp .env.local.example .env.local
+```
+
+3. Run the migration SQL in your Supabase project.
+
+4. Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Test the redirect by inserting a row manually in Supabase:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sql
+INSERT INTO links (slug, destination, label)
+VALUES ('test', 'https://example.com', 'Test link');
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Then visit `http://localhost:3000/r/test` — you should be redirected to `https://example.com`.
 
-## Learn More
+## Redirect Route
 
-To learn more about Next.js, take a look at the following resources:
+`GET /r/[slug]`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Looks up the slug in Supabase
+- Increments `scan_count`
+- Returns `302` redirect to `destination`
+- Returns `404` JSON if slug not found
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Roadmap
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See open tickets for Frontend and Backend work items.
