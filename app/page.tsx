@@ -4,6 +4,7 @@ import QRCode from 'qrcode'
 import { supabase } from '@/lib/supabase'
 import { CreateLinkForm } from './components/CreateLinkForm'
 import { EditLinkForm } from './components/EditLinkForm'
+import { DownloadQRButton } from './components/DownloadQRButton'
 import { deleteLink } from './actions'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
@@ -62,13 +63,16 @@ export default async function Home() {
                     className="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm"
                   >
                     {/* QR code */}
-                    <img
-                      src={link.qrDataUrl}
-                      alt={`QR code for /${link.slug}`}
-                      width={80}
-                      height={80}
-                      className="shrink-0 rounded border border-zinc-100"
-                    />
+                    <div className="shrink-0 flex flex-col items-center gap-1.5">
+                      <img
+                        src={link.qrDataUrl}
+                        alt={`QR code for /${link.slug}`}
+                        width={80}
+                        height={80}
+                        className="rounded border border-zinc-100"
+                      />
+                      <DownloadQRButton dataUrl={link.qrDataUrl} slug={link.slug} />
+                    </div>
 
                     {/* Details */}
                     <div className="flex-1 min-w-0 space-y-1">
