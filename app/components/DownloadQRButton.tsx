@@ -17,7 +17,7 @@ export function DownloadQRButton({ dataUrl, slug }: Props) {
     <button
       type="button"
       onClick={handleDownload}
-      className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
+      className="rounded-lg border border-green-olive px-3 py-1.5 text-xs font-medium text-green-forest hover:bg-green-forest hover:text-white transition-colors"
     >
       Download
     </button>

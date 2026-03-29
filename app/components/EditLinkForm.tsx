@@ -67,7 +67,7 @@ export function EditLinkForm({ linkId, currentDestination, currentLabel }: Props
       <button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
+        className="rounded-lg border border-green-olive px-3 py-1.5 text-xs font-medium text-green-forest hover:bg-green-forest hover:text-white transition-colors"
       >
         Edit
       </button>
@@ -77,32 +77,32 @@ export function EditLinkForm({ linkId, currentDestination, currentLabel }: Props
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-3 space-y-2 border-t border-zinc-100 pt-3"
+      className="mt-3 space-y-2 border-t border-green-olive/30 pt-3"
     >
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-zinc-600">
-          Destination URL <span className="text-red-500">*</span>
+        <label className="text-xs font-medium text-green-forest font-serif">
+          Destination URL <span className="text-orange-soft">*</span>
         </label>
         <input
           type="url"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
           required
-          className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm focus:border-zinc-600 focus:outline-none"
+          className="rounded-lg border border-green-olive bg-white px-3 py-1.5 text-sm text-text focus:border-green-forest focus:outline-none"
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-zinc-600">Label</label>
+        <label className="text-xs font-medium text-green-forest font-serif">Label</label>
         <input
           type="text"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           placeholder="Optional label"
-          className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm focus:border-zinc-600 focus:outline-none"
+          className="rounded-lg border border-green-olive bg-white px-3 py-1.5 text-sm text-text placeholder:text-text/40 focus:border-green-forest focus:outline-none"
         />
       </div>
       {error && (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="text-xs text-orange-soft">
           {error}
         </p>
       )}
@@ -110,7 +110,7 @@ export function EditLinkForm({ linkId, currentDestination, currentLabel }: Props
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+          className="rounded-lg bg-green-forest px-3 py-1.5 text-xs font-medium text-white hover:bg-green-olive disabled:opacity-50 transition-colors"
         >
           {pending ? 'Saving…' : 'Save'}
         </button>
@@ -118,7 +118,7 @@ export function EditLinkForm({ linkId, currentDestination, currentLabel }: Props
           type="button"
           onClick={handleCancel}
           disabled={pending}
-          className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+          className="rounded-lg border border-green-olive px-3 py-1.5 text-xs font-medium text-green-forest hover:bg-green-forest hover:text-white disabled:opacity-50 transition-colors"
         >
           Cancel
         </button>
