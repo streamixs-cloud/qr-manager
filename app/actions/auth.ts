@@ -1,11 +1,22 @@
 'use server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import bcrypt from 'bcryptjs'
 import { supabase } from '@/lib/supabase'
 import { createSession, deleteSession } from '@/lib/session'
+import { checkRateLimit, resetRateLimit } from '@/lib/rate-limit'
 
 export type AuthState = {
   error?: string
+}
+
+async function getClientKey(email: string): Promise<string> {
+  const headersList = await headers()
+  const ip =
+    headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    headersList.get('x-real-ip') ??
+    'unknown'
+  return `login:${ip}:${email}`
 }
 
 export async function login(prevState: AuthState, formData: FormData): Promise<AuthState> {
@@ -14,6 +25,13 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
 
   if (!email || !password) {
     return { error: 'Email and password are required' }
+  }
+
+  const rateLimitKey = await getClientKey(email)
+  const { limited, retryAfterSeconds } = checkRateLimit(rateLimitKey)
+  if (limited) {
+    const minutes = Math.ceil(retryAfterSeconds / 60)
+    return { error: `Too many login attempts. Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.` }
   }
 
   const { data: user } = await supabase
@@ -31,6 +49,7 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
     return { error: 'Invalid email or password' }
   }
 
+  resetRateLimit(rateLimitKey)
   await createSession(user.id)
   redirect('/')
 }
