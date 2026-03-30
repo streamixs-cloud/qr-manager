@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { nanoid } from 'nanoid'
 import { supabase } from '@/lib/supabase'
+import { verifySession } from '@/lib/dal'
 
 export type ActionState = {
   error?: string
@@ -36,10 +37,13 @@ export async function createLink(
 
   const slug = slugInput || nanoid(8)
 
+  const { userId } = await verifySession()
+
   const { error } = await supabase.from('links').insert({
     slug,
     destination,
     label,
+    user_id: userId,
   })
 
   if (error) {
@@ -54,6 +58,7 @@ export async function createLink(
 }
 
 export async function deleteLink(id: string): Promise<void> {
-  await supabase.from('links').delete().eq('id', id)
+  const { userId } = await verifySession()
+  await supabase.from('links').delete().eq('id', id).eq('user_id', userId)
   revalidatePath('/')
 }

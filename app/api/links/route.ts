@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { supabase } from "@/lib/supabase";
+import { getSession } from "@/lib/session";
 
 export async function GET() {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.userId;
+
   const { data, error } = await supabase
     .from("links")
     .select("*")
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -16,6 +24,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.userId;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -49,7 +63,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("links")
-    .insert({ slug: resolvedSlug, destination, label: label ?? null })
+    .insert({ slug: resolvedSlug, destination, label: label ?? null, user_id: userId })
     .select()
     .single();
 

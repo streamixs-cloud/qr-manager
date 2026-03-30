@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { getSession } from "@/lib/session";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.userId;
   const { id } = await params;
 
   let body: unknown;
@@ -39,6 +45,7 @@ export async function PUT(
     .from("links")
     .update({ destination, label: label ?? null })
     .eq("id", id)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -56,9 +63,14 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.userId;
   const { id } = await params;
 
-  const { error } = await supabase.from("links").delete().eq("id", id);
+  const { error } = await supabase.from("links").delete().eq("id", id).eq("user_id", userId);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
