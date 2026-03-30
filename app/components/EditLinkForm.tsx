@@ -67,7 +67,7 @@ export function EditLinkForm({ linkId, currentDestination, currentLabel }: Props
       <button
         type="button"
         onClick={() => setIsEditing(true)}
-        className="rounded-lg border border-green-olive px-3 py-1.5 text-xs font-medium text-green-forest hover:bg-green-forest hover:text-white transition-colors"
+        className="rounded-md [border-width:1.5px] border-green-forest bg-green-forest px-4 py-1.5 text-xs font-medium text-white hover:opacity-90 transition-colors"
       >
         Edit
       </button>

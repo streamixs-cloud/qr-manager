@@ -68,7 +68,7 @@ export default async function Home() {
                       className="flex items-start gap-4 rounded-lg border border-green-olive bg-cream p-4 hover:border-green-forest transition-colors"
                     >
                       {/* QR code */}
-                      <div className="shrink-0 flex flex-col items-center gap-1.5">
+                      <div className="shrink-0">
                         <div className="rounded border border-green-olive bg-white p-1">
                           <img
                             src={link.qrDataUrl}
@@ -77,7 +77,6 @@ export default async function Home() {
                             height={80}
                           />
                         </div>
-                        <DownloadQRButton dataUrl={link.qrDataUrl} slug={link.slug} />
                       </div>
 
                       {/* Details */}
@@ -103,22 +102,23 @@ export default async function Home() {
                         <p className="text-xs text-text/50">
                           {link.scan_count} scan{link.scan_count !== 1 ? 's' : ''}
                         </p>
-                        <EditLinkForm
-                          linkId={link.id}
-                          currentDestination={link.destination}
-                          currentLabel={link.label}
-                        />
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <EditLinkForm
+                            linkId={link.id}
+                            currentDestination={link.destination}
+                            currentLabel={link.label}
+                          />
+                          <DownloadQRButton dataUrl={link.qrDataUrl} slug={link.slug} />
+                          <form action={deleteLinkById}>
+                            <button
+                              type="submit"
+                              className="rounded-md [border-width:1.5px] border-orange-soft bg-transparent px-4 py-1.5 text-xs font-medium text-orange-soft hover:bg-orange-soft hover:text-white transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </form>
+                        </div>
                       </div>
-
-                      {/* Delete */}
-                      <form action={deleteLinkById} className="shrink-0">
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-orange-soft px-3 py-1.5 text-xs font-medium text-orange-soft hover:bg-orange-soft hover:text-white transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </form>
                     </li>
                   )
                 })}
