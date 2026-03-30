@@ -17,10 +17,11 @@ export default async function Home() {
 
   const linksWithQR = await Promise.all(
     (links ?? []).map(async (link) => {
-      const qrDataUrl = await QRCode.toDataURL(`${SITE_URL}/r/${link.slug}`, {
-        width: 120,
+      const svgString = await QRCode.toString(`${SITE_URL}/r/${link.slug}`, {
+        type: 'svg',
         margin: 1,
       })
+      const qrDataUrl = `data:image/svg+xml;base64,${Buffer.from(svgString).toString('base64')}`
       return { ...link, qrDataUrl }
     })
   )
