@@ -5,14 +5,19 @@ import { supabase } from '@/lib/supabase'
 import { CreateLinkForm } from './components/CreateLinkForm'
 import { EditLinkForm } from './components/EditLinkForm'
 import { DownloadQRButton } from './components/DownloadQRButton'
+import Link from 'next/link'
 import { deleteLink } from './actions'
+import { logout } from './actions/auth'
+import { verifySession } from '@/lib/dal'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
 export default async function Home() {
+  const { userId } = await verifySession()
   const { data: links } = await supabase
     .from('links')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   const linksWithQR = await Promise.all(
@@ -30,11 +35,18 @@ export default async function Home() {
     <div className="min-h-screen bg-beige">
       {/* Header */}
       <header className="bg-green-forest px-4 py-5">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="text-2xl font-bold text-white font-serif">QR Manager</h1>
-          <p className="mt-1 text-sm text-white/70">
-            Create short links and get instant QR codes
-          </p>
+        <div className="mx-auto max-w-3xl flex items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-white font-serif">QR Manager</h1>
+            <p className="mt-1 text-sm text-white/70">
+              Create short links and get instant QR codes
+            </p>
+          </div>
+          <form action={logout} className="ml-auto">
+            <button type="submit" className="text-sm text-white/70 hover:text-white transition-colors">
+              Sign out
+            </button>
+          </form>
         </div>
       </header>
 
@@ -108,6 +120,17 @@ export default async function Home() {
                             currentDestination={link.destination}
                             currentLabel={link.label}
                           />
+                          <Link
+                            href={`/links/${link.id}/stats`}
+                            className="inline-flex items-center gap-1.5 rounded-md [border-width:1.5px] border-green-forest bg-green-forest px-4 py-1.5 text-xs font-medium text-white hover:opacity-90 transition-colors"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                              <rect x="0" y="6" width="3" height="6" rx="0.5" fill="currentColor" />
+                              <rect x="4.5" y="3" width="3" height="9" rx="0.5" fill="currentColor" />
+                              <rect x="9" y="0" width="3" height="12" rx="0.5" fill="currentColor" />
+                            </svg>
+                            Stats
+                          </Link>
                           <DownloadQRButton dataUrl={link.qrDataUrl} slug={link.slug} />
                           <form action={deleteLinkById}>
                             <button
