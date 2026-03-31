@@ -11,6 +11,16 @@ export type StatsResult = {
   summary: StatsSummary
 }
 
+export type DeviceBreakdown = {
+  mobile: number
+  desktop: number
+}
+
+export type ReferrerCount = {
+  referrer: string
+  count: number
+}
+
 export type DateRange = {
   fromDate: Date
   days: number
@@ -75,6 +85,62 @@ export function buildDayChartData(
     result.push({ date: dateStr, count: counts[dateStr] ?? 0 })
   }
   return result
+}
+
+/**
+ * Classifies a user-agent string as mobile or desktop.
+ */
+function isMobile(userAgent: string | null): boolean {
+  if (!userAgent) return false
+  return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)
+}
+
+/**
+ * Returns mobile vs desktop scan counts for a set of events.
+ */
+export function buildDeviceBreakdown(
+  events: { user_agent: string | null }[]
+): DeviceBreakdown {
+  let mobile = 0
+  let desktop = 0
+  for (const event of events) {
+    if (isMobile(event.user_agent)) {
+      mobile++
+    } else {
+      desktop++
+    }
+  }
+  return { mobile, desktop }
+}
+
+/**
+ * Extracts the hostname from a referrer URL, or returns "direct" for empty values.
+ */
+function normalizeReferrer(referer: string | null): string {
+  if (!referer) return 'direct'
+  try {
+    return new URL(referer).hostname
+  } catch {
+    return referer
+  }
+}
+
+/**
+ * Returns the top N referrers (by scan count) for a set of events.
+ */
+export function buildTopReferrers(
+  events: { referer: string | null }[],
+  limit = 5
+): ReferrerCount[] {
+  const counts: Record<string, number> = {}
+  for (const event of events) {
+    const key = normalizeReferrer(event.referer)
+    counts[key] = (counts[key] ?? 0) + 1
+  }
+  return Object.entries(counts)
+    .map(([referrer, count]) => ({ referrer, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit)
 }
 
 /**

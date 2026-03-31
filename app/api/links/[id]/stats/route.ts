@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/session";
-import { resolveDateRange, buildDayChartData, computeSummary } from "@/lib/stats";
+import { resolveDateRange, buildDayChartData, computeSummary, buildDeviceBreakdown, buildTopReferrers } from "@/lib/stats";
 
 export async function GET(
   request: NextRequest,
@@ -34,7 +34,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from("scan_events")
-    .select("scanned_at")
+    .select("scanned_at, user_agent, referer")
     .eq("link_id", id)
     .gte("scanned_at", fromDate.toISOString());
 
@@ -42,8 +42,11 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const dayData = buildDayChartData(data ?? [], fromDate, days);
+  const events = data ?? [];
+  const dayData = buildDayChartData(events, fromDate, days);
   const summary = computeSummary(dayData);
+  const devices = buildDeviceBreakdown(events);
+  const referrers = buildTopReferrers(events);
 
-  return NextResponse.json({ data: dayData, summary });
+  return NextResponse.json({ data: dayData, summary, devices, referrers });
 }
