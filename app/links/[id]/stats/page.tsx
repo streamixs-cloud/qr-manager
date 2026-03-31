@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { ScanChart } from '@/app/components/ScanChart'
+import { PeriodSelector } from '@/app/components/PeriodSelector'
+import { ExportCSVButton } from '@/app/components/ExportCSVButton'
 import { resolveDateRange, buildDayChartData, computeSummary } from '@/lib/stats'
 
 export default async function StatsPage({
@@ -66,9 +68,15 @@ export default async function StatsPage({
           </section>
 
           <section className="rounded-lg border border-green-olive bg-cream p-6">
-            <h2 className="mb-4 text-lg font-semibold text-green-forest font-serif">
-              Scans — last {days} days
-            </h2>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-green-forest font-serif">
+                Scans — last {days} days
+              </h2>
+              <div className="flex flex-wrap items-center gap-3">
+                <PeriodSelector current={period ?? '30'} />
+                <ExportCSVButton data={chartData} summary={summary} slug={link.slug} />
+              </div>
+            </div>
             <div className="mb-4 grid grid-cols-3 gap-4 text-center text-sm">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-green-forest/60 font-serif">Period total</p>
