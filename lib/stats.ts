@@ -28,6 +28,37 @@ export type DateRange = {
 
 const VALID_PERIODS = [7, 30, 90] as const
 
+// All date boundaries and chart labels use the Paris timezone.
+const APP_TZ = 'Europe/Paris'
+
+const dateFmt = new Intl.DateTimeFormat('en-CA', {
+  timeZone: APP_TZ,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+/** Returns 'YYYY-MM-DD' for the given instant in the app timezone. */
+function toAppDate(date: Date): string {
+  return dateFmt.format(date)
+}
+
+/**
+ * Returns the UTC Date representing midnight (start of day) in the app
+ * timezone for the given 'YYYY-MM-DD' date string.
+ * Paris is UTC+1 (CET) or UTC+2 (CEST), so midnight falls between
+ * 21:00–23:00 UTC the previous calendar day. We scan that window.
+ */
+function appDateToUTCStart(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  for (let h = 21; h <= 24; h++) {
+    const candidate = new Date(Date.UTC(y, m - 1, d - 1, h, 0, 0))
+    if (toAppDate(candidate) === dateStr) return candidate
+  }
+  // Fallback (should never be reached for Europe/Paris)
+  return new Date(Date.UTC(y, m - 1, d))
+}
+
 /**
  * Resolves a date range from query parameters.
  * Priority: `from`/`to` > `period` > default (30 days).
@@ -57,14 +88,17 @@ export function resolveDateRange(params: {
       ? Number(period)
       : 30
 
-  const now = new Date()
-  const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  const fromDate = new Date(todayUTC - (days - 1) * 86_400_000)
+  // Compute today's date string in the app timezone, then find its UTC start.
+  const todayStr = toAppDate(new Date())
+  const [y, m, d] = todayStr.split('-').map(Number)
+  const fromDateStr = new Date(Date.UTC(y, m - 1, d - (days - 1))).toISOString().slice(0, 10)
+  const fromDate = appDateToUTCStart(fromDateStr)
   return { fromDate, days }
 }
 
 /**
  * Builds a full time-series array (one entry per day) from raw scan events.
+ * Events are bucketed by their date in the app timezone.
  */
 export function buildDayChartData(
   events: { scanned_at: string }[],
@@ -73,15 +107,16 @@ export function buildDayChartData(
 ): DayCount[] {
   const counts: Record<string, number> = {}
   for (const event of events) {
-    const date = (event.scanned_at as string).slice(0, 10)
+    const date = toAppDate(new Date(event.scanned_at))
     counts[date] = (counts[date] ?? 0) + 1
   }
 
+  // Generate the axis labels as consecutive app-timezone dates starting from fromDate.
+  const fromDateStr = toAppDate(fromDate)
+  const [y, m, d] = fromDateStr.split('-').map(Number)
   const result: DayCount[] = []
   for (let i = 0; i < days; i++) {
-    const d = new Date(fromDate)
-    d.setDate(d.getDate() + i)
-    const dateStr = d.toISOString().slice(0, 10)
+    const dateStr = new Date(Date.UTC(y, m - 1, d + i)).toISOString().slice(0, 10)
     result.push({ date: dateStr, count: counts[dateStr] ?? 0 })
   }
   return result
