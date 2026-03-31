@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -13,9 +14,12 @@ import {
 type DayCount = { date: string; count: number }
 
 export function ScanChart({ data }: { data: DayCount[] }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   return (
     <div className="h-56 rounded-md bg-beige px-2 py-2">
-      <ResponsiveContainer width="100%" height="100%">
+      {mounted && <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#6b8f3e33" />
           <XAxis
@@ -44,7 +48,7 @@ export function ScanChart({ data }: { data: DayCount[] }) {
             activeDot={{ r: 4, fill: '#3a5a2a' }}
           />
         </LineChart>
-      </ResponsiveContainer>
+      </ResponsiveContainer>}
     </div>
   )
 }
