@@ -57,9 +57,9 @@ export function resolveDateRange(params: {
       ? Number(period)
       : 30
 
-  const fromDate = new Date()
-  fromDate.setDate(fromDate.getDate() - (days - 1))
-  fromDate.setHours(0, 0, 0, 0)
+  const now = new Date()
+  const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  const fromDate = new Date(todayUTC - (days - 1) * 86_400_000)
   return { fromDate, days }
 }
 
