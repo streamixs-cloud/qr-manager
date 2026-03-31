@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { EditLinkForm } from './EditLinkForm'
-import { DownloadQRButton } from './DownloadQRButton'
+import { QRCustomizerModal } from './QRCustomizerModal'
 import { deleteLink } from '../actions'
 
 type LinkWithQR = {
@@ -14,6 +14,7 @@ type LinkWithQR = {
   scan_count: number
   created_at: string
   qrDataUrl: string
+  shortUrl: string
 }
 
 type SortOption = 'recent' | 'most_scanned'
@@ -145,7 +146,7 @@ export function LinksList({ links }: { links: LinkWithQR[] }) {
                       </svg>
                       Stats
                     </Link>
-                    <DownloadQRButton dataUrl={link.qrDataUrl} slug={link.slug} />
+                    <QRCustomizerModal url={link.shortUrl} slug={link.slug} />
                     <form action={deleteLinkById}>
                       <button
                         type="submit"
