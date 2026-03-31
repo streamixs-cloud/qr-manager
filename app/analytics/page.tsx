@@ -3,14 +3,21 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { ScanChart } from '@/app/components/ScanChart'
+import { PeriodSelector } from '@/app/components/PeriodSelector'
+import { ExportCSVButton } from '@/app/components/ExportCSVButton'
 import { verifySession } from '@/lib/dal'
 import { resolveDateRange, buildDayChartData, computeSummary } from '@/lib/stats'
 import { logout } from '@/app/actions/auth'
 
 const TOP_N = 5
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>
+}) {
   const { userId } = await verifySession()
+  const { period } = await searchParams
 
   const { data: links } = await supabase
     .from('links')
@@ -22,7 +29,7 @@ export default async function AnalyticsPage() {
   const totalScans = allLinks.reduce((sum, l) => sum + (l.scan_count ?? 0), 0)
   const topLinks = allLinks.slice(0, TOP_N)
 
-  const { fromDate, days } = resolveDateRange({})
+  const { fromDate, days } = resolveDateRange({ period })
 
   let chartData: { date: string; count: number }[] = []
   if (allLinks.length > 0) {
@@ -78,11 +85,17 @@ export default async function AnalyticsPage() {
             </p>
           </section>
 
-          {/* 30-day chart */}
+          {/* Period chart */}
           <section className="rounded-lg border border-green-olive bg-cream p-6">
-            <h2 className="mb-4 text-lg font-semibold text-green-forest font-serif">
-              Scans — last {days} days (all links)
-            </h2>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-green-forest font-serif">
+                Scans — last {days} days (all links)
+              </h2>
+              <div className="flex flex-wrap items-center gap-3">
+                <PeriodSelector current={period ?? '30'} />
+                <ExportCSVButton data={chartData} summary={summary} slug="analytics" />
+              </div>
+            </div>
             <div className="mb-4 grid grid-cols-3 gap-4 text-center text-sm">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-green-forest/60 font-serif">
