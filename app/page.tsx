@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import QRCode from 'qrcode'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 import { CreateLinkForm } from './components/CreateLinkForm'
 import { LinksList } from './components/LinksList'
 import { logout } from './actions/auth'
@@ -40,11 +41,19 @@ export default async function Home() {
               Create short links and get instant QR codes
             </p>
           </div>
-          <form action={logout} className="ml-auto">
-            <button type="submit" className="text-sm text-white/70 hover:text-white transition-colors">
-              Sign out
-            </button>
-          </form>
+          <nav className="ml-auto flex items-center gap-4">
+            <Link
+              href="/analytics"
+              className="text-sm text-white/70 hover:text-white transition-colors"
+            >
+              Analytics
+            </Link>
+            <form action={logout}>
+              <button type="submit" className="text-sm text-white/70 hover:text-white transition-colors">
+                Sign out
+              </button>
+            </form>
+          </nav>
         </div>
       </header>
 
