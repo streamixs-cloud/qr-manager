@@ -4,15 +4,17 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { ScanChart } from '@/app/components/ScanChart'
-
-type DayCount = { date: string; count: number }
+import { resolveDateRange, buildDayChartData, computeSummary } from '@/lib/stats'
 
 export default async function StatsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ period?: string; from?: string; to?: string }>
 }) {
   const { id } = await params
+  const { period, from, to } = await searchParams
 
   const { data: link } = await supabase
     .from('links')
@@ -22,28 +24,16 @@ export default async function StatsPage({
 
   if (!link) notFound()
 
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const { fromDate, days } = resolveDateRange({ period, from, to })
 
   const { data: events } = await supabase
     .from('scan_events')
     .select('scanned_at')
     .eq('link_id', id)
-    .gte('scanned_at', thirtyDaysAgo.toISOString())
+    .gte('scanned_at', fromDate.toISOString())
 
-  const counts: Record<string, number> = {}
-  for (const event of events ?? []) {
-    const date = (event.scanned_at as string).slice(0, 10)
-    counts[date] = (counts[date] ?? 0) + 1
-  }
-
-  const chartData: DayCount[] = []
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    const dateStr = d.toISOString().slice(0, 10)
-    chartData.push({ date: dateStr, count: counts[dateStr] ?? 0 })
-  }
+  const chartData = buildDayChartData(events ?? [], fromDate, days)
+  const summary = computeSummary(chartData)
 
   return (
     <div className="min-h-screen bg-beige">
@@ -77,8 +67,22 @@ export default async function StatsPage({
 
           <section className="rounded-lg border border-green-olive bg-cream p-6">
             <h2 className="mb-4 text-lg font-semibold text-green-forest font-serif">
-              Scans — last 30 days
+              Scans — last {days} days
             </h2>
+            <div className="mb-4 grid grid-cols-3 gap-4 text-center text-sm">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-green-forest/60 font-serif">Period total</p>
+                <p className="mt-1 text-2xl font-bold text-green-forest font-serif">{summary.total}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-green-forest/60 font-serif">Avg / day</p>
+                <p className="mt-1 text-2xl font-bold text-green-forest font-serif">{summary.avgPerDay}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-green-forest/60 font-serif">Peak day</p>
+                <p className="mt-1 text-2xl font-bold text-green-forest font-serif">{summary.maxPerDay}</p>
+              </div>
+            </div>
             <ScanChart data={chartData} />
           </section>
         </div>
