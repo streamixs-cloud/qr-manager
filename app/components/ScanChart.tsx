@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 import {
   LineChart,
   Line,
@@ -14,8 +14,7 @@ import {
 type DayCount = { date: string; count: number }
 
 export function ScanChart({ data }: { data: DayCount[] }) {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
 
   return (
     <div className="h-56 rounded-md bg-beige px-2 py-2">

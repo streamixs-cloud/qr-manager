@@ -17,7 +17,6 @@ function getClient(): SupabaseClient {
 export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
   get(_target, prop: string | symbol) {
     const client = getClient();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const val = (client as unknown as Record<string | symbol, unknown>)[prop];
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     return typeof val === "function" ? (val as Function).bind(client) : val;

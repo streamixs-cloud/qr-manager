@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { EditLinkForm } from './EditLinkForm'
 import { QRCustomizerModal } from './QRCustomizerModal'
 import { deleteLink } from '../actions'
@@ -100,11 +101,12 @@ export function LinksList({ links }: { links: LinkWithQR[] }) {
               >
                 <div className="shrink-0">
                   <div className="rounded border border-green-olive bg-white p-1">
-                    <img
+                    <Image
                       src={link.qrDataUrl}
                       alt={`QR code for /${link.slug}`}
                       width={80}
                       height={80}
+                      unoptimized
                     />
                   </div>
                 </div>
