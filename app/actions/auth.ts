@@ -10,13 +10,13 @@ export type AuthState = {
   error?: string
 }
 
-async function getClientKey(email: string): Promise<string> {
+async function getClientKey(prefix: string, email: string): Promise<string> {
   const headersList = await headers()
   const ip =
     headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     headersList.get('x-real-ip') ??
     'unknown'
-  return `login:${ip}:${email}`
+  return `${prefix}:${ip}:${email}`
 }
 
 export async function login(prevState: AuthState, formData: FormData): Promise<AuthState> {
@@ -27,7 +27,7 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
     return { error: 'Email and password are required' }
   }
 
-  const rateLimitKey = await getClientKey(email)
+  const rateLimitKey = await getClientKey('login', email)
   const { limited, retryAfterSeconds } = checkRateLimit(rateLimitKey)
   if (limited) {
     const minutes = Math.ceil(retryAfterSeconds / 60)
@@ -64,6 +64,13 @@ export async function register(prevState: AuthState, formData: FormData): Promis
 
   if (password.length < 8) {
     return { error: 'Password must be at least 8 characters' }
+  }
+
+  const rateLimitKey = await getClientKey('register', email)
+  const { limited, retryAfterSeconds } = checkRateLimit(rateLimitKey)
+  if (limited) {
+    const minutes = Math.ceil(retryAfterSeconds / 60)
+    return { error: `Too many registration attempts. Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.` }
   }
 
   const { data: existing } = await supabase
