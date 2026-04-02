@@ -79,6 +79,21 @@ export default function LoginPage() {
                   placeholder={mode === 'login' ? '••••••••' : 'At least 8 characters'}
                 />
               </div>
+              {mode === 'register' && (
+                <div>
+                  <label htmlFor="invite_code" className="block text-sm font-medium text-text mb-1">
+                    Invite code
+                  </label>
+                  <input
+                    id="invite_code"
+                    name="invite_code"
+                    type="text"
+                    autoComplete="off"
+                    className="w-full rounded-md border border-green-olive bg-white px-3 py-2 text-sm text-text placeholder-text/40 focus:border-green-forest focus:outline-none focus:ring-1 focus:ring-green-forest"
+                    placeholder="Enter your invite code"
+                  />
+                </div>
+              )}
 
               {state?.error && (
                 <p className="text-sm text-orange-soft">{state.error}</p>
