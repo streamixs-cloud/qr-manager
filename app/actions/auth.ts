@@ -57,6 +57,7 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
 export async function register(prevState: AuthState, formData: FormData): Promise<AuthState> {
   const email = (formData.get('email') as string)?.trim().toLowerCase()
   const password = formData.get('password') as string
+  const inviteCode = (formData.get('invite_code') as string)?.trim()
 
   if (!email || !password) {
     return { error: 'Email and password are required' }
@@ -64,6 +65,13 @@ export async function register(prevState: AuthState, formData: FormData): Promis
 
   if (password.length < 8) {
     return { error: 'Password must be at least 8 characters' }
+  }
+
+  const requiredCode = process.env.REGISTRATION_INVITE_CODE
+  if (requiredCode) {
+    if (!inviteCode || inviteCode !== requiredCode) {
+      return { error: 'Invalid or missing invite code' }
+    }
   }
 
   const { data: existing } = await supabase
