@@ -132,6 +132,34 @@ Also add `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SESSION_S
 5. Add the same variables as GitHub Actions secrets for CI builds.
 6. Push to `staging` to validate the staging environment, then merge to `main` for production.
 
+## scan_events Retention Policy
+
+Detailed scan events are retained for **12 months** by default. Events older than the retention window are deleted by a purge script.
+
+### How it works
+
+- Migration `005_scan_events_retention.sql` creates a `purge_old_scan_events(retention_months integer)` SQL function.
+- `scripts/purge-scan-events.ts` calls that function and can be executed on a schedule.
+
+### Running the purge manually
+
+```bash
+npx tsx scripts/purge-scan-events.ts
+```
+
+Requires the same Supabase env vars as the app. For production, prefer a service-role key:
+
+```
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SCAN_EVENTS_RETENTION_MONTHS=12   # optional, defaults to 12
+```
+
+### Scheduling
+
+- **Vercel Cron Jobs**: add a cron route that calls the Supabase RPC directly.
+- **GitHub Actions**: add a scheduled workflow that runs the script.
+- **pg_cron** (Supabase extension): `SELECT cron.schedule('purge-scans', '0 3 * * *', $$SELECT purge_old_scan_events(12)$$);`
+
 ## Roadmap
 
 See open tickets for Frontend and Backend work items.
